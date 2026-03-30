@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0f1923">
+<title>IronLog — Trainings Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #0f1923;
+  --bg2:       #162030;
+  --bg3:       #1d2d40;
+  --card:      #1a2838;
+  --border:    #2a3d52;
+  --accent:    #e8a830;
+  --accent2:   #3ecfaa;
+  --text:      #e8edf2;
+  --muted:     #6b8299;
+  --danger:    #e05c5c;
+  --done:      #3ecfaa;
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-body:    'DM Sans', sans-serif;
+  --font-mono:    'DM Mono', monospace;
+  --radius:    12px;
+  --shadow:    0 4px 24px rgba(0,0,0,0.4);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.logo { font-family: var(--font-display); font-size: 28px; letter-spacing: 2px; color: var(--accent); }
+.logo span { color: var(--accent2); }
+.topbar-right { display: flex; gap: 8px; }
+.icon-btn {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 16px;
+  transition: background .15s, border-color .15s;
+}
+.icon-btn:hover { background: var(--border); border-color: var(--accent); }
+
+/* ── NAV TABS ── */
+.nav {
+  display: flex;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.nav::-webkit-scrollbar { display: none; }
+.nav-tab {
+  flex: 1;
+  min-width: 80px;
+  padding: 10px 8px 8px;
+  text-align: center;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  border-bottom: 3px solid transparent;
+  transition: all .2s;
+  white-space: nowrap;
+  letter-spacing: .3px;
+  text-transform: uppercase;
+}
+.nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.nav-tab:hover:not(.active) { color: var(--text); }
+
+/* ── PAGES ── */
+.page { display: none; padding: 16px; max-width: 640px; margin: 0 auto; }
+.page.active { display: block; }
+
+/* ── SECTION TITLE ── */
+.section-title {
+  font-family: var(--font-display);
+  font-size: 32px;
+  letter-spacing: 2px;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.section-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+
+/* ── DAY CARD ── */
+.day-header {
+  background: linear-gradient(135deg, var(--bg3) 0%, var(--card) 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.day-label { font-family: var(--font-display); font-size: 22px; color: var(--accent); letter-spacing: 1px; }
+.day-date { font-size: 12px; color: var(--muted); font-family: var(--font-mono); }
+.day-stats { text-align: right; }
+.day-vol { font-family: var(--font-display); font-size: 22px; color: var(--accent2); }
+.day-vol-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+/* ── EXERCISE BLOCK ── */
+.exercise-block {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  overflow: hidden;
+  transition: border-color .2s;
+}
+.exercise-block.is-cali { border-left: 3px solid var(--accent2); }
+.exercise-block.all-done { border-color: var(--done); }
+
+.exercise-header {
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+}
+.exercise-name { font-weight: 600; font-size: 15px; }
+.exercise-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.exercise-badge {
+  font-size: 10px;
+  font-weight: 600;
+  background: rgba(62,207,170,.15);
+  color: var(--accent2);
+  border: 1px solid rgba(62,207,170,.3);
+  border-radius: 6px;
+  padding: 2px 7px;
+  letter-spacing: .5px;
+}
+.exercise-badge.strength { background: rgba(232,168,48,.1); color: var(--accent); border-color: rgba(232,168,48,.3); }
+.prev-best { font-size: 11px; color: var(--muted); margin-top: 3px; font-family: var(--font-mono); }
+.prev-best span { color: var(--accent); }
+
+.exercise-body { padding: 0 14px 14px; }
+
+/* ── SET ROW ── */
+.set-header {
+  display: grid;
+  grid-template-columns: 32px 1fr 1fr 40px;
+  gap: 8px;
+  padding: 0 0 6px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.set-header.cali-header { grid-template-columns: 32px 1fr 1fr 40px; }
+
+.set-row {
+  display: grid;
+  grid-template-columns: 32px 1fr 1fr 40px;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.set-row.cali-row { grid-template-columns: 32px 1fr 1fr 40px; }
+
+.set-num {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  text-align: center;
+  width: 32px;
+  height: 32px;
+  background: var(--bg3);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.set-num.checked { background: rgba(62,207,170,.2); color: var(--accent2); }
+
+input[type=number], input[type=text] {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 500;
+  height: 38px;
+  width: 100%;
+  text-align: center;
+  outline: none;
+  transition: border-color .15s, background .15s;
+  -moz-appearance: textfield;
+}
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+input[type=number]:focus, input[type=text]:focus {
+  border-color: var(--accent);
+  background: var(--bg2);
+}
+input[type=number].filled { border-color: rgba(62,207,170,.4); }
+
+.check-btn {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  border: 2px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+}
+.check-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+.check-btn.done { background: rgba(62,207,170,.2); border-color: var(--done); color: var(--done); }
+
+.add-set-btn {
+  width: 100%;
+  background: transparent;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  font-family: var(--font-body);
+  padding: 8px;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: all .15s;
+}
+.add-set-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── SAVE SESSION BTN ── */
+.save-btn {
+  width: 100%;
+  background: var(--accent);
+  color: #0f1923;
+  border: none;
+  border-radius: var(--radius);
+  font-family: var(--font-display);
+  font-size: 22px;
+  letter-spacing: 2px;
+  padding: 14px;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: opacity .15s, transform .1s;
+}
+.save-btn:hover { opacity: .9; }
+.save-btn:active { transform: scale(.99); }
+
+/* ── HISTORY PAGE ── */
+.history-list { display: flex; flex-direction: column; gap: 12px; }
+
+.history-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  cursor: pointer;
+  transition: border-color .2s;
+}
+.history-card:hover { border-color: var(--accent); }
+.history-card-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.history-day { font-family: var(--font-display); font-size: 20px; color: var(--accent); }
+.history-date { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.history-vol { font-family: var(--font-display); font-size: 20px; color: var(--accent2); text-align: right; }
+.history-vol-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+.history-exercises { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+.history-tag {
+  font-size: 11px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 3px 8px;
+  color: var(--muted);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--muted);
+}
+.empty-icon { font-size: 48px; margin-bottom: 12px; }
+.empty-text { font-size: 15px; }
+
+/* ── PROGRESS PAGE ── */
+.progress-exercise {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+.progress-ex-header {
+  padding: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+.progress-ex-name { font-weight: 600; font-size: 15px; }
+.progress-ex-best { font-family: var(--font-mono); font-size: 13px; color: var(--accent); }
+.progress-ex-body { padding: 0 14px 14px; border-top: 1px solid var(--border); }
+
+.progress-chart {
+  height: 80px;
+  margin-top: 12px;
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+}
+.chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.chart-bar {
+  width: 100%;
+  background: linear-gradient(180deg, var(--accent2), rgba(62,207,170,.4));
+  border-radius: 4px 4px 0 0;
+  min-height: 4px;
+  transition: height .3s ease;
+}
+.chart-label { font-size: 9px; color: var(--muted); font-family: var(--font-mono); text-align: center; }
+
+.progress-history-rows { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; }
+.progress-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  padding: 5px 8px;
+  background: var(--bg3);
+  border-radius: 6px;
+}
+.progress-row-date { color: var(--muted); font-family: var(--font-mono); }
+.progress-row-val { color: var(--accent2); font-family: var(--font-mono); font-weight: 500; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--accent2);
+  color: #0f1923;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 24px;
+  padding: 10px 22px;
+  z-index: 999;
+  transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+  white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ── MODAL ── */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.7);
+  z-index: 200;
+  align-items: flex-end;
+  justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-width: 640px;
+  padding: 20px 20px 40px;
+  max-height: 80dvh;
+  overflow-y: auto;
+}
+.modal-title { font-family: var(--font-display); font-size: 24px; letter-spacing: 1px; margin-bottom: 16px; }
+.modal-close {
+  float: right;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  width: 32px; height: 32px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ── SETTINGS PAGE ── */
+.settings-section { margin-bottom: 24px; }
+.settings-title { font-family: var(--font-display); font-size: 20px; letter-spacing: 1px; color: var(--muted); margin-bottom: 12px; text-transform: uppercase; }
+.settings-btn {
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  padding: 13px 16px;
+  text-align: left;
+  cursor: pointer;
+  margin-bottom: 8px;
+  transition: border-color .15s;
+}
+.settings-btn:hover { border-color: var(--accent); }
+.settings-btn.danger { color: var(--danger); border-color: rgba(224,92,92,.3); }
+.settings-btn.danger:hover { border-color: var(--danger); background: rgba(224,92,92,.08); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 380px) {
+  .set-header, .set-row { grid-template-columns: 28px 1fr 1fr 36px; gap: 6px; }
+  input[type=number] { font-size: 14px; }
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">Iron<span>Log</span></div>
+  <div class="topbar-right">
+    <button class="icon-btn" onclick="showPage('settings')" title="Instellingen">⚙️</button>
+  </div>
+</div>
+
+<nav class="nav">
+  <div class="nav-tab active" onclick="showPage('dag1')">DAG 1<br><small style="font-size:9px;opacity:.7">Push</small></div>
+  <div class="nav-tab" onclick="showPage('dag2')">DAG 2<br><small style="font-size:9px;opacity:.7">Pull</small></div>
+  <div class="nav-tab" onclick="showPage('dag3')">DAG 3<br><small style="font-size:9px;opacity:.7">Full</small></div>
+  <div class="nav-tab" onclick="showPage('history')">📋<br><small style="font-size:9px;opacity:.7">Log</small></div>
+  <div class="nav-tab" onclick="showPage('progress')">📈<br><small style="font-size:9px;opacity:.7">Progressie</small></div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════ DAG 1 -->
+<div class="page active" id="page-dag1"></div>
+
+<!-- ═══════════════════════════════════════════════════════ DAG 2 -->
+<div class="page" id="page-dag2"></div>
+
+<!-- ═══════════════════════════════════════════════════════ DAG 3 -->
+<div class="page" id="page-dag3"></div>
+
+<!-- ═══════════════════════════════════════════════════════ HISTORY -->
+<div class="page" id="page-history">
+  <div class="section-title">SESSIE LOG</div>
+  <div class="section-sub">Alle opgeslagen trainingen</div>
+  <div class="history-list" id="history-list"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ PROGRESS -->
+<div class="page" id="page-progress">
+  <div class="section-title">PROGRESSIE</div>
+  <div class="section-sub">Volume & records per oefening</div>
+  <div id="progress-list"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ SETTINGS -->
+<div class="page" id="page-settings">
+  <div class="section-title">INSTELLINGEN</div>
+  <div class="section-sub">Beheer je data & sync</div>
+
+  <div class="settings-section">
+    <div class="settings-title">Google Sheets Sync</div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.6">
+        Plak hier je <strong style="color:var(--text)">Apps Script Web App URL</strong>. Elke opgeslagen sessie wordt dan automatisch naar je Google Sheet gestuurd.
+      </div>
+      <input type="text" id="sheets-url-input" placeholder="https://script.google.com/macros/s/..." 
+        style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font-mono);font-size:12px;height:40px;padding:0 12px;outline:none;margin-bottom:10px"
+        oninput="this.style.borderColor='var(--accent)'">
+      <div style="display:flex;gap:8px">
+        <button class="settings-btn" style="margin:0;flex:1" onclick="saveSheetsUrl()">💾 URL Opslaan</button>
+        <button class="settings-btn" style="margin:0;flex:1" onclick="testSheetsConnection()">🔗 Verbinding testen</button>
+      </div>
+    </div>
+    <div id="sheets-status" style="font-size:12px;color:var(--muted);padding:6px 2px;min-height:20px"></div>
+    <button class="settings-btn" onclick="syncPendingSessions()">☁️ Niet-gesynchroniseerde sessies sturen</button>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-title">Lokale Data</div>
+    <button class="settings-btn" onclick="exportData()">📤 Exporteer data als JSON</button>
+    <button class="settings-btn" onclick="document.getElementById('import-input').click()">📥 Importeer data van JSON</button>
+    <input type="file" id="import-input" accept=".json" style="display:none" onchange="importData(event)">
+    <button class="settings-btn danger" onclick="confirmClear()">🗑️ Verwijder alle data</button>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-title">Over</div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;font-size:13px;color:var(--muted);line-height:1.6">
+      <strong style="color:var(--text)">IronLog v1.1</strong><br>
+      Persoonlijke trainings tracker voor je 3-day split.<br>
+      Data lokaal opgeslagen + optionele Google Sheets sync.<br><br>
+      Host gratis op <strong style="color:var(--accent)">GitHub Pages</strong> of <strong style="color:var(--accent)">Netlify</strong> — geen server nodig.
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- HISTORY DETAIL MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal" id="modal-body">
+    <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<script>
+// ─── DATA ────────────────────────────────────────────────────────────────────
+const DAYS = {
+  dag1: {
+    title: "DAG 1 — PUSH & SCHOUDERS",
+    sub: "Borst · Schouders · Triceps",
+    exercises: [
+      { name: "DB Bench Press", sets: 4, reps: 10, type: "strength", meta: "4×8-10 · 75s rust" },
+      { name: "DB Arnold Press", sets: 3, reps: 12, type: "strength", meta: "3×10-12 · 60s rust" },
+      { name: "DB Lateral Raise", sets: 3, reps: 15, type: "strength", meta: "3×12-15 · 45s rust" },
+      { name: "Farmers Carry", sets: 3, reps: 0, type: "strength", meta: "3×30m · 60s rust", isTimed: true, timeLabel: "Afstand (m)" },
+      { name: "Push-up Variaties", sets: 4, reps: 12, type: "cali", meta: "4×10-12 · 60s rust", isCali: true },
+      { name: "Pike Push-up", sets: 3, reps: 12, type: "cali", meta: "3×10-12 · 60s rust", isCali: true },
+      { name: "Tricep Dip (bank)", sets: 3, reps: 15, type: "cali", meta: "3×12-15 · 60s rust", isCali: true },
+    ]
+  },
+  dag2: {
+    title: "DAG 2 — PULL & BENEN",
+    sub: "Rug · Biceps · Hamstrings · Gluteus",
+    exercises: [
+      { name: "DB Bent-Over Row", sets: 4, reps: 12, type: "strength", meta: "4×10-12 · 60s rust" },
+      { name: "DB Romanian Deadlift", sets: 4, reps: 12, type: "strength", meta: "4×10-12 · 75s rust" },
+      { name: "DB Single-Leg RDL", sets: 3, reps: 8, type: "strength", meta: "3×8/kant · 60s rust" },
+      { name: "DB Goblet Squat", sets: 3, reps: 15, type: "strength", meta: "3×12-15 · 60s rust" },
+      { name: "Glute Bridge met DB", sets: 3, reps: 15, type: "strength", meta: "3×12-15 · 45s rust" },
+      { name: "Inverted Row", sets: 4, reps: 10, type: "cali", meta: "4×8-12 · 60s rust", isCali: true },
+      { name: "Pistol Squat", sets: 3, reps: 6, type: "cali", meta: "3×5-8/kant · 75s rust", isCali: true },
+    ]
+  },
+  dag3: {
+    title: "DAG 3 — FULL BODY & CORE",
+    sub: "Core · Stabiliteit · Full Body",
+    exercises: [
+      { name: "DB Turkish Get-Up", sets: 3, reps: 3, type: "strength", meta: "3×3/kant · 90s rust" },
+      { name: "DB Renegade Row", sets: 4, reps: 9, type: "strength", meta: "4×8-10/kant · 75s rust" },
+      { name: "DB Thruster", sets: 3, reps: 12, type: "strength", meta: "3×10-12 · 75s rust" },
+      { name: "DB Suitcase Carry", sets: 3, reps: 0, type: "strength", meta: "3×30m/kant · 60s rust", isTimed: true, timeLabel: "Afstand (m)" },
+      { name: "Plank Variaties", sets: 3, reps: 0, type: "cali", meta: "3×45sec · 45s rust", isCali: true, isTimed: true, timeLabel: "Tijd (sec)" },
+      { name: "Hollow Body Hold", sets: 3, reps: 0, type: "cali", meta: "3×30sec · 45s rust", isCali: true, isTimed: true, timeLabel: "Tijd (sec)" },
+      { name: "Burpee", sets: 3, reps: 10, type: "cali", meta: "3×10 · 60s rust", isCali: true },
+    ]
+  }
+};
+
+function getStorage() {
+  try { return JSON.parse(localStorage.getItem('ironlog') || '{"sessions":[]}'); }
+  catch { return { sessions: [] }; }
+}
+function saveStorage(data) {
+  localStorage.setItem('ironlog', JSON.stringify(data));
+}
+
+// ─── SESSION STATE ────────────────────────────────────────────────────────────
+const sessionState = { dag1: {}, dag2: {}, dag3: {} };
+
+function initSession(day) {
+  const dayData = DAYS[day];
+  const state = {};
+  dayData.exercises.forEach(ex => {
+    state[ex.name] = [];
+    for (let i = 0; i < ex.sets; i++) {
+      state[ex.name].push({ reps: '', weight: '', time: '', done: false });
+    }
+  });
+  sessionState[day] = state;
+}
+
+['dag1', 'dag2', 'dag3'].forEach(d => initSession(d));
+
+// ─── GET PREV SESSION ─────────────────────────────────────────────────────────
+function getPrevSession(day, exName) {
+  const data = getStorage();
+  const sessions = data.sessions.filter(s => s.day === day).reverse();
+  for (const s of sessions) {
+    const ex = s.exercises.find(e => e.name === exName);
+    if (ex && ex.sets.some(set => set.weight || set.time)) return ex;
+  }
+  return null;
+}
+
+function getPrevBestText(day, exName, isCali, isTimed) {
+  const prev = getPrevSession(day, exName);
+  if (!prev) return null;
+  if (isCali && isTimed) {
+    const times = prev.sets.map(s => parseFloat(s.time)).filter(v => !isNaN(v));
+    if (!times.length) return null;
+    return `Vorige: ${Math.max(...times)}s max`;
+  }
+  if (isCali) {
+    const reps = prev.sets.map(s => parseInt(s.reps)).filter(v => !isNaN(v));
+    if (!reps.length) return null;
+    return `Vorige: ${Math.max(...reps)} reps max`;
+  }
+  if (isTimed) {
+    const times = prev.sets.map(s => parseFloat(s.time)).filter(v => !isNaN(v));
+    if (!times.length) return null;
+    return `Vorige: ${Math.max(...times)}m max`;
+  }
+  const weights = prev.sets.map(s => parseFloat(s.weight)).filter(v => !isNaN(v));
+  if (!weights.length) return null;
+  return `Vorige: ${Math.max(...weights)} kg`;
+}
+
+// ─── RENDER DAY PAGE ──────────────────────────────────────────────────────────
+function renderDay(day) {
+  const container = document.getElementById(`page-${day}`);
+  const dayData = DAYS[day];
+  const state = sessionState[day];
+
+  // Calculate current volume
+  let totalVol = 0;
+  Object.entries(state).forEach(([exName, sets]) => {
+    sets.forEach(s => {
+      const r = parseFloat(s.reps), w = parseFloat(s.weight);
+      if (!isNaN(r) && !isNaN(w)) totalVol += r * w;
+    });
+  });
+
+  const dateStr = new Date().toLocaleDateString('nl-BE', { weekday: 'short', day: 'numeric', month: 'short' });
+
+  let html = `
+    <div class="day-header">
+      <div>
+        <div class="day-label">${dayData.title.replace('DAG 1 — ', '').replace('DAG 2 — ', '').replace('DAG 3 — ', '')}</div>
+        <div class="day-date">${dateStr}</div>
+      </div>
+      <div class="day-stats">
+        <div class="day-vol">${totalVol > 0 ? totalVol.toFixed(0) + ' kg' : '—'}</div>
+        <div class="day-vol-label">Volume</div>
+      </div>
+    </div>
+  `;
+
+  dayData.exercises.forEach(ex => {
+    const sets = state[ex.name] || [];
+    const allDone = sets.length > 0 && sets.every(s => s.done);
+    const prevText = getPrevBestText(day, ex.name, ex.isCali, ex.isTimed);
+    const isCali = ex.isCali;
+    const isTimed = ex.isTimed;
+
+    const col1Label = isCali && isTimed ? ex.timeLabel || 'Tijd (sec)'
+                    : isTimed ? ex.timeLabel || 'Afstand (m)'
+                    : isCali ? 'Reps'
+                    : 'Reps';
+    const col2Label = isCali ? '' : 'Kg';
+
+    html += `<div class="exercise-block${isCali ? ' is-cali' : ''}${allDone ? ' all-done' : ''}" id="ex-${day}-${slugify(ex.name)}">
+      <div class="exercise-header" onclick="toggleExercise('${day}','${ex.name}')">
+        <div>
+          <div class="exercise-name">${ex.name}</div>
+          <div class="exercise-meta">${ex.meta}</div>
+          ${prevText ? `<div class="prev-best">📌 <span>${prevText}</span></div>` : ''}
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+          <span class="exercise-badge ${isCali ? '' : 'strength'}">${isCali ? 'CALI' : 'KRACHT'}</span>
+          <span style="font-size:18px;color:var(--muted)">${allDone ? '✅' : '▾'}</span>
+        </div>
+      </div>
+      <div class="exercise-body" id="body-${day}-${slugify(ex.name)}">
+        <div class="set-header">
+          <div style="text-align:center">Set</div>
+          <div style="text-align:center">${col1Label}</div>
+          ${isCali && !isTimed ? '<div></div>' : `<div style="text-align:center">${col2Label}</div>`}
+          <div></div>
+        </div>`;
+
+    sets.forEach((set, i) => {
+      if (isCali && !isTimed) {
+        // Calisthenics: only reps + check
+        html += `<div class="set-row" style="grid-template-columns:32px 1fr 40px;gap:8px">
+          <div class="set-num${set.done ? ' checked' : ''}">${i + 1}</div>
+          <input type="number" placeholder="${ex.reps || '—'}" value="${set.reps}"
+            oninput="updateSet('${day}','${ex.name}',${i},'reps',this.value)"
+            class="${set.reps ? 'filled' : ''}">
+          <button class="check-btn${set.done ? ' done' : ''}" onclick="toggleSetDone('${day}','${ex.name}',${i})">
+            ${set.done ? '✓' : '○'}
+          </button>
+        </div>`;
+      } else if (isCali && isTimed) {
+        // Calisthenics timed: only time + check
+        html += `<div class="set-row" style="grid-template-columns:32px 1fr 40px;gap:8px">
+          <div class="set-num${set.done ? ' checked' : ''}">${i + 1}</div>
+          <input type="number" placeholder="sec" value="${set.time}"
+            oninput="updateSet('${day}','${ex.name}',${i},'time',this.value)"
+            class="${set.time ? 'filled' : ''}">
+          <button class="check-btn${set.done ? ' done' : ''}" onclick="toggleSetDone('${day}','${ex.name}',${i})">
+            ${set.done ? '✓' : '○'}
+          </button>
+        </div>`;
+      } else if (isTimed) {
+        // Strength timed (carry): distance + check
+        html += `<div class="set-row" style="grid-template-columns:32px 1fr 40px;gap:8px">
+          <div class="set-num${set.done ? ' checked' : ''}">${i + 1}</div>
+          <input type="number" placeholder="m" value="${set.time}"
+            oninput="updateSet('${day}','${ex.name}',${i},'time',this.value)"
+            class="${set.time ? 'filled' : ''}">
+          <button class="check-btn${set.done ? ' done' : ''}" onclick="toggleSetDone('${day}','${ex.name}',${i})">
+            ${set.done ? '✓' : '○'}
+          </button>
+        </div>`;
+      } else {
+        // Normal strength: reps + kg + check
+        html += `<div class="set-row">
+          <div class="set-num${set.done ? ' checked' : ''}">${i + 1}</div>
+          <input type="number" placeholder="${ex.reps}" value="${set.reps}"
+            oninput="updateSet('${day}','${ex.name}',${i},'reps',this.value)"
+            class="${set.reps ? 'filled' : ''}">
+          <input type="number" placeholder="kg" step="0.5" value="${set.weight}"
+            oninput="updateSet('${day}','${ex.name}',${i},'weight',this.value)"
+            class="${set.weight ? 'filled' : ''}">
+          <button class="check-btn${set.done ? ' done' : ''}" onclick="toggleSetDone('${day}','${ex.name}',${i})">
+            ${set.done ? '✓' : '○'}
+          </button>
+        </div>`;
+      }
+    });
+
+    html += `
+        <button class="add-set-btn" onclick="addSet('${day}','${ex.name}')">+ Set toevoegen</button>
+      </div>
+    </div>`;
+  });
+
+  html += `<button class="save-btn" onclick="saveSession('${day}')">💾 SESSIE OPSLAAN</button>
+  <div style="height:24px"></div>`;
+
+  container.innerHTML = html;
+}
+
+function slugify(name) {
+  return name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+}
+
+function toggleExercise(day, name) {
+  const body = document.getElementById(`body-${day}-${slugify(name)}`);
+  if (!body) return;
+  body.style.display = body.style.display === 'none' ? '' : 'none';
+}
+
+function updateSet(day, name, idx, field, value) {
+  sessionState[day][name][idx][field] = value;
+  // Re-render just the header volume
+  const dayData = DAYS[day];
+  const state = sessionState[day];
+  let totalVol = 0;
+  Object.entries(state).forEach(([exName, sets]) => {
+    sets.forEach(s => {
+      const r = parseFloat(s.reps), w = parseFloat(s.weight);
+      if (!isNaN(r) && !isNaN(w)) totalVol += r * w;
+    });
+  });
+  const volEl = document.querySelector(`#page-${day} .day-vol`);
+  if (volEl) volEl.textContent = totalVol > 0 ? totalVol.toFixed(0) + ' kg' : '—';
+}
+
+function toggleSetDone(day, name, idx) {
+  sessionState[day][name][idx].done = !sessionState[day][name][idx].done;
+  renderDay(day);
+}
+
+function addSet(day, name) {
+  sessionState[day][name].push({ reps: '', weight: '', time: '', done: false });
+  renderDay(day);
+}
+
+// ─── SAVE SESSION ─────────────────────────────────────────────────────────────
+function saveSession(day) {
+  const state = sessionState[day];
+  const exercises = [];
+  let hasData = false;
+
+  DAYS[day].exercises.forEach(ex => {
+    const sets = state[ex.name];
+    const filteredSets = sets.filter(s => s.reps || s.weight || s.time);
+    if (filteredSets.length) {
+      hasData = true;
+      exercises.push({ name: ex.name, isCali: !!ex.isCali, isTimed: !!ex.isTimed, sets: filteredSets });
+    }
+  });
+
+  if (!hasData) { showToast('⚠️ Vul eerst minstens één set in'); return; }
+
+  const session = {
+    id: Date.now(),
+    day,
+    date: new Date().toISOString(),
+    exercises,
+    synced: false
+  };
+
+  const data = getStorage();
+  data.sessions.push(session);
+  saveStorage(data);
+
+  // Reset session
+  initSession(day);
+  renderDay(day);
+  renderHistory();
+  renderProgress();
+
+  // Try sync to Sheets
+  const url = getSheetsUrl();
+  if (url) {
+    showToast('💾 Opgeslagen · ☁️ Synchroniseren...');
+    sendToSheets(session).then(ok => {
+      if (ok) {
+        markSynced(session.id);
+        showToast('✅ Opgeslagen & gesynchroniseerd!');
+      } else {
+        showToast('💾 Lokaal opgeslagen · Sync mislukt');
+      }
+    });
+  } else {
+    showToast('✅ Sessie opgeslagen!');
+  }
+}
+
+// ─── GOOGLE SHEETS SYNC ───────────────────────────────────────────────────────
+function getSheetsUrl() {
+  return localStorage.getItem('ironlog_sheets_url') || '';
+}
+
+function saveSheetsUrl() {
+  const url = document.getElementById('sheets-url-input').value.trim();
+  if (!url) { showSheetsStatus('⚠️ Geen URL ingevoerd', 'var(--danger)'); return; }
+  localStorage.setItem('ironlog_sheets_url', url);
+  showSheetsStatus('✅ URL opgeslagen', 'var(--accent2)');
+  showToast('✅ URL opgeslagen!');
+}
+
+function showSheetsStatus(msg, color) {
+  const el = document.getElementById('sheets-status');
+  if (el) { el.textContent = msg; el.style.color = color; }
+}
+
+async function sendToSheets(session) {
+  const url = getSheetsUrl();
+  if (!url) return false;
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(session)
+    });
+    const json = await res.json();
+    return json.status === 'ok';
+  } catch {
+    return false;
+  }
+}
+
+function markSynced(id) {
+  const data = getStorage();
+  const s = data.sessions.find(x => x.id === id);
+  if (s) { s.synced = true; saveStorage(data); }
+}
+
+async function testSheetsConnection() {
+  const url = document.getElementById('sheets-url-input').value.trim() || getSheetsUrl();
+  if (!url) { showSheetsStatus('⚠️ Geen URL ingevuld', 'var(--danger)'); return; }
+  showSheetsStatus('🔄 Verbinding testen...', 'var(--muted)');
+  try {
+    const res = await fetch(url);
+    const json = await res.json();
+    if (json.status === 'ok') {
+      showSheetsStatus('✅ Verbinding OK — Google Sheet bereikbaar!', 'var(--accent2)');
+    } else {
+      showSheetsStatus('⚠️ Sheet antwoordt maar geeft een fout terug', 'var(--accent)');
+    }
+  } catch {
+    showSheetsStatus('❌ Verbinding mislukt — controleer de URL', 'var(--danger)');
+  }
+}
+
+async function syncPendingSessions() {
+  const url = getSheetsUrl();
+  if (!url) { showSheetsStatus('⚠️ Stel eerst een URL in', 'var(--danger)'); return; }
+  const data = getStorage();
+  const pending = data.sessions.filter(s => !s.synced);
+  if (!pending.length) { showToast('✅ Alles al gesynchroniseerd'); return; }
+  showToast(`☁️ ${pending.length} sessie(s) synchroniseren...`);
+  let ok = 0;
+  for (const s of pending) {
+    const success = await sendToSheets(s);
+    if (success) { markSynced(s.id); ok++; }
+  }
+  showToast(`✅ ${ok}/${pending.length} sessies gesynchroniseerd`);
+  showSheetsStatus(`Laatste sync: ${new Date().toLocaleTimeString('nl-BE')}`, 'var(--accent2)');
+}
+
+// ─── HISTORY ──────────────────────────────────────────────────────────────────
+function renderHistory() {
+  const data = getStorage();
+  const list = document.getElementById('history-list');
+  if (!data.sessions.length) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">Nog geen sessies opgeslagen.<br>Start een training om te beginnen!</div></div>`;
+    return;
+  }
+
+  list.innerHTML = [...data.sessions].reverse().map(s => {
+    let vol = 0;
+    s.exercises.forEach(ex => ex.sets.forEach(set => {
+      const r = parseFloat(set.reps), w = parseFloat(set.weight);
+      if (!isNaN(r) && !isNaN(w)) vol += r * w;
+    }));
+    const dateStr = new Date(s.date).toLocaleDateString('nl-BE', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+    const dayTitle = { dag1: 'DAG 1 — Push', dag2: 'DAG 2 — Pull', dag3: 'DAG 3 — Full Body' }[s.day] || s.day;
+    const tags = s.exercises.map(e => `<span class="history-tag">${e.name}</span>`).join('');
+    return `<div class="history-card" onclick="showSessionDetail(${s.id})">
+      <div class="history-card-top">
+        <div>
+          <div class="history-day">${dayTitle}</div>
+          <div class="history-date">${dateStr}</div>
+        </div>
+        <div>
+          <div class="history-vol">${vol > 0 ? vol.toFixed(0) + ' kg' : '—'}</div>
+          <div class="history-vol-lbl">Volume</div>
+        </div>
+      </div>
+      <div class="history-exercises">${tags}</div>
+    </div>`;
+  }).join('');
+}
+
+function showSessionDetail(id) {
+  const data = getStorage();
+  const s = data.sessions.find(x => x.id === id);
+  if (!s) return;
+  const dateStr = new Date(s.date).toLocaleDateString('nl-BE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const dayTitle = { dag1: 'DAG 1 — Push', dag2: 'DAG 2 — Pull', dag3: 'DAG 3 — Full Body' }[s.day];
+
+  let html = `<div class="modal-title">${dayTitle}</div>
+    <div style="font-family:var(--font-mono);font-size:12px;color:var(--muted);margin-bottom:16px">${dateStr}</div>`;
+
+  s.exercises.forEach(ex => {
+    html += `<div style="margin-bottom:14px">
+      <div style="font-weight:600;margin-bottom:8px">${ex.name}</div>`;
+    ex.sets.forEach((set, i) => {
+      let detail = '';
+      if (set.reps && set.weight) detail = `${set.reps} reps × ${set.weight} kg`;
+      else if (set.reps) detail = `${set.reps} reps`;
+      else if (set.time) detail = `${set.time} sec/m`;
+      html += `<div style="display:flex;gap:10px;align-items:center;margin-bottom:4px">
+        <span style="background:var(--bg3);border-radius:6px;padding:3px 8px;font-family:var(--font-mono);font-size:12px;color:var(--muted)">Set ${i+1}</span>
+        <span style="font-family:var(--font-mono);font-size:13px;color:var(--accent2)">${detail || '—'}</span>
+      </div>`;
+    });
+    html += '</div>';
+  });
+
+  document.getElementById('modal-content').innerHTML = html;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModalDirect();
+}
+function closeModalDirect() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+// ─── PROGRESS ─────────────────────────────────────────────────────────────────
+function renderProgress() {
+  const data = getStorage();
+  const container = document.getElementById('progress-list');
+
+  // Collect all exercise names
+  const allEx = {};
+  ['dag1', 'dag2', 'dag3'].forEach(day => {
+    DAYS[day].exercises.forEach(ex => {
+      if (!allEx[ex.name]) allEx[ex.name] = { isCali: ex.isCali, isTimed: ex.isTimed, data: [] };
+    });
+  });
+
+  data.sessions.forEach(s => {
+    s.exercises.forEach(ex => {
+      if (!allEx[ex.name]) allEx[ex.name] = { data: [] };
+      let maxVol = 0, maxReps = 0, maxWeight = 0, maxTime = 0;
+      ex.sets.forEach(set => {
+        const r = parseFloat(set.reps), w = parseFloat(set.weight), t = parseFloat(set.time);
+        if (!isNaN(r) && !isNaN(w)) maxVol = Math.max(maxVol, r * w);
+        if (!isNaN(r)) maxReps = Math.max(maxReps, r);
+        if (!isNaN(w)) maxWeight = Math.max(maxWeight, w);
+        if (!isNaN(t)) maxTime = Math.max(maxTime, t);
+      });
+      allEx[ex.name].data.push({
+        date: s.date,
+        maxVol, maxWeight, maxReps, maxTime
+      });
+    });
+  });
+
+  const exWithData = Object.entries(allEx).filter(([, v]) => v.data.length > 0);
+
+  if (!exWithData.length) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">📈</div><div class="empty-text">Nog geen data.<br>Sla een training op om progressie te zien.</div></div>`;
+    return;
+  }
+
+  container.innerHTML = exWithData.map(([name, info]) => {
+    const recent = info.data.slice(-8);
+    const isCali = info.isCali;
+    const isTimed = info.isTimed;
+
+    let bestLabel = '';
+    if (isCali && isTimed) {
+      const best = Math.max(...info.data.map(d => d.maxTime));
+      bestLabel = `${best}s best`;
+    } else if (isCali) {
+      const best = Math.max(...info.data.map(d => d.maxReps));
+      bestLabel = `${best} reps best`;
+    } else {
+      const best = Math.max(...info.data.map(d => d.maxWeight));
+      bestLabel = `${best} kg best`;
+    }
+
+    const vals = recent.map(d => isCali && isTimed ? d.maxTime : isCali ? d.maxReps : d.maxVol);
+    const maxVal = Math.max(...vals, 1);
+
+    const bars = recent.map((d, i) => {
+      const h = Math.max(8, Math.round((vals[i] / maxVal) * 64));
+      const dateStr = new Date(d.date).toLocaleDateString('nl-BE', { day: 'numeric', month: 'short' });
+      return `<div class="chart-bar-wrap">
+        <div class="chart-bar" style="height:${h}px"></div>
+        <div class="chart-label">${dateStr.split(' ')[0]}/${dateStr.split(' ')[1]?.slice(0,3) || ''}</div>
+      </div>`;
+    }).join('');
+
+    const rows = [...info.data].reverse().slice(0, 5).map(d => {
+      const dateStr = new Date(d.date).toLocaleDateString('nl-BE', { day: 'numeric', month: 'short', year: '2-digit' });
+      let val = isCali && isTimed ? `${d.maxTime}s` : isCali ? `${d.maxReps} reps` : `${d.maxVol.toFixed(0)} kg vol`;
+      return `<div class="progress-row"><span class="progress-row-date">${dateStr}</span><span class="progress-row-val">${val}</span></div>`;
+    }).join('');
+
+    return `<div class="progress-exercise">
+      <div class="progress-ex-header" onclick="toggleProgress(this)">
+        <div class="progress-ex-name">${name}</div>
+        <div class="progress-ex-best">${bestLabel}</div>
+      </div>
+      <div class="progress-ex-body" style="display:none">
+        <div class="progress-chart">${bars || '<div style="color:var(--muted);font-size:12px;padding:8px">Nog onvoldoende data</div>'}</div>
+        <div class="progress-history-rows">${rows}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleProgress(header) {
+  const body = header.nextElementSibling;
+  body.style.display = body.style.display === 'none' ? '' : 'none';
+}
+
+// ─── NAVIGATION ───────────────────────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(`page-${name}`).classList.add('active');
+  const tabs = document.querySelectorAll('.nav-tab');
+  const idx = { dag1: 0, dag2: 1, dag3: 2, history: 3, progress: 4, settings: 5 }[name];
+  if (idx !== undefined && tabs[idx]) tabs[idx].classList.add('active');
+
+  if (name === 'history') renderHistory();
+  if (name === 'progress') renderProgress();
+  if (name === 'settings') {
+    const urlInput = document.getElementById('sheets-url-input');
+    if (urlInput) urlInput.value = getSheetsUrl();
+  }
+}
+
+// ─── TOAST ────────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ─── SETTINGS ─────────────────────────────────────────────────────────────────
+function exportData() {
+  const data = getStorage();
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `ironlog-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  showToast('📤 Data geëxporteerd!');
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.sessions) throw new Error();
+      saveStorage(data);
+      showToast('📥 Data geïmporteerd!');
+      renderHistory();
+      renderProgress();
+    } catch {
+      showToast('❌ Ongeldig bestand');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function confirmClear() {
+  if (confirm('Ben je zeker? Dit verwijdert alle trainingsdata permanent.')) {
+    saveStorage({ sessions: [] });
+    ['dag1', 'dag2', 'dag3'].forEach(d => initSession(d));
+    renderHistory();
+    renderProgress();
+    showToast('🗑️ Data verwijderd');
+  }
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+renderDay('dag1');
+renderDay('dag2');
+renderDay('dag3');
+</script>
+</body>
+</html>
