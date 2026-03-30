@@ -862,18 +862,42 @@ function showSheetsStatus(msg, color) {
   if (el) { el.textContent = msg; el.style.color = color; }
 }
 
-async function sendToSheets(session) {
+function sendToSheets(session) {
   const url = getSheetsUrl();
-  if (!url) return false;
-  try {
-    // Apps Script blokkeert CORS preflight — stuur als no-cors GET met data als param
-    const encoded = encodeURIComponent(JSON.stringify(session));
-    await fetch(`${url}?data=${encoded}`, { method: 'GET', mode: 'no-cors' });
-    // no-cors geeft altijd een "opaque" response zonder status — we gaan ervan uit dat het lukte
-    return true;
-  } catch {
-    return false;
-  }
+  if (!url) return Promise.resolve(false);
+
+  return new Promise((resolve) => {
+    // Maak een verborgen iframe als sandbox voor de form submit
+    const iframe = document.createElement('iframe');
+    iframe.name = 'ironlog-submit-' + Date.now();
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+
+    // Maak een verborgen form die post naar Apps Script via het iframe
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = url;
+    form.target = iframe.name;
+    form.style.display = 'none';
+
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'payload';
+    input.value = JSON.stringify(session);
+    form.appendChild(input);
+    document.body.appendChild(form);
+
+    // Submit — Apps Script ontvangt dit als e.parameter.payload
+    form.submit();
+
+    // Ruim op na 4 seconden en markeer als geslaagd
+    // (geen echte bevestiging mogelijk via form submit, maar Apps Script verwerkt het wel)
+    setTimeout(() => {
+      document.body.removeChild(form);
+      document.body.removeChild(iframe);
+      resolve(true);
+    }, 4000);
+  });
 }
 
 function markSynced(id) {
@@ -888,7 +912,6 @@ async function testSheetsConnection() {
   showSheetsStatus('🔄 Verbinding testen...', 'var(--muted)');
   try {
     await fetch(url + '?ping=1', { mode: 'no-cors' });
-    // Als fetch niet gooit, is de URL bereikbaar (opaque response = normaal bij no-cors)
     showSheetsStatus('✅ URL bereikbaar — Apps Script actief!', 'var(--accent2)');
   } catch {
     showSheetsStatus('❌ Verbinding mislukt — controleer de URL of je internetverbinding', 'var(--danger)');
@@ -899,15 +922,25 @@ async function syncPendingSessions() {
   const url = getSheetsUrl();
   if (!url) { showSheetsStatus('⚠️ Stel eerst een URL in', 'var(--danger)'); return; }
   const data = getStorage();
+  // Reset alle sessies als niet-gesynchroniseerd zodat ze opnieuw worden gestuurd
   const pending = data.sessions.filter(s => !s.synced);
-  if (!pending.length) { showToast('✅ Alles al gesynchroniseerd'); return; }
+  if (!pending.length) {
+    // Alle sessies resetten zodat gebruiker kan hersynchen
+    if (confirm('Alle sessies zijn al gemarkeerd als gesynchroniseerd.\nWil je alle sessies opnieuw naar Google Sheets sturen?')) {
+      data.sessions.forEach(s => s.synced = false);
+      saveStorage(data);
+      syncPendingSessions();
+    }
+    return;
+  }
   showToast(`☁️ ${pending.length} sessie(s) synchroniseren...`);
   let ok = 0;
   for (const s of pending) {
+    showToast(`☁️ Sessie ${ok + 1}/${pending.length} versturen...`);
     const success = await sendToSheets(s);
     if (success) { markSynced(s.id); ok++; }
   }
-  showToast(`✅ ${ok}/${pending.length} sessies gesynchroniseerd`);
+  showToast(`✅ ${ok}/${pending.length} sessies verstuurd naar Sheets`);
   showSheetsStatus(`Laatste sync: ${new Date().toLocaleTimeString('nl-BE')}`, 'var(--accent2)');
 }
 
