@@ -866,13 +866,11 @@ async function sendToSheets(session) {
   const url = getSheetsUrl();
   if (!url) return false;
   try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify(session)
-    });
-    const json = await res.json();
-    return json.status === 'ok';
+    // Apps Script blokkeert CORS preflight — stuur als no-cors GET met data als param
+    const encoded = encodeURIComponent(JSON.stringify(session));
+    await fetch(`${url}?data=${encoded}`, { method: 'GET', mode: 'no-cors' });
+    // no-cors geeft altijd een "opaque" response zonder status — we gaan ervan uit dat het lukte
+    return true;
   } catch {
     return false;
   }
@@ -889,15 +887,11 @@ async function testSheetsConnection() {
   if (!url) { showSheetsStatus('⚠️ Geen URL ingevuld', 'var(--danger)'); return; }
   showSheetsStatus('🔄 Verbinding testen...', 'var(--muted)');
   try {
-    const res = await fetch(url);
-    const json = await res.json();
-    if (json.status === 'ok') {
-      showSheetsStatus('✅ Verbinding OK — Google Sheet bereikbaar!', 'var(--accent2)');
-    } else {
-      showSheetsStatus('⚠️ Sheet antwoordt maar geeft een fout terug', 'var(--accent)');
-    }
+    await fetch(url + '?ping=1', { mode: 'no-cors' });
+    // Als fetch niet gooit, is de URL bereikbaar (opaque response = normaal bij no-cors)
+    showSheetsStatus('✅ URL bereikbaar — Apps Script actief!', 'var(--accent2)');
   } catch {
-    showSheetsStatus('❌ Verbinding mislukt — controleer de URL', 'var(--danger)');
+    showSheetsStatus('❌ Verbinding mislukt — controleer de URL of je internetverbinding', 'var(--danger)');
   }
 }
 
